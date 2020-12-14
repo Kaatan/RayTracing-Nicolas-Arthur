@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\nicol\Documents\Travail\2A\IN204\Projet\RayTracing-Nicolas-Arthur\Projet Test\build\CMakeFiles\ca681b21ad7cda96ec2c3607e9d5ebbf\INSTALL_force.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="CMake Rules">
+      <UniqueIdentifier>{58155CFC-C985-3090-BA0A-62B1C2B445C9}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

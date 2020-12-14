@@ -1,0 +1,31 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\nicol\Documents\Travail\2A\IN204\Projet\RayTracing-Nicolas-Arthur\Projet Test\src\Projet Test.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\nicol\Documents\Travail\2A\IN204\Projet\RayTracing-Nicolas-Arthur\Projet Test\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\nicol\Documents\Travail\2A\IN204\Projet\RayTracing-Nicolas-Arthur\Projet Test\src\Debug\Projet Test.exe.recipe" />
+    <None Include="C:\Users\nicol\Documents\Travail\2A\IN204\Projet\RayTracing-Nicolas-Arthur\Projet Test\src\Debug\Projet Test.log" />
+    <None Include="C:\Users\nicol\Documents\Travail\2A\IN204\Projet\RayTracing-Nicolas-Arthur\Projet Test\src\Debug\Projet Test.tlog\CL.command.1.tlog" />
+    <None Include="C:\Users\nicol\Documents\Travail\2A\IN204\Projet\RayTracing-Nicolas-Arthur\Projet Test\src\Debug\Projet Test.tlog\Projet Test.lastbuildstate" />
+    <None Include="C:\Users\nicol\Documents\Travail\2A\IN204\Projet\RayTracing-Nicolas-Arthur\Projet Test\src\Debug\Projet Test.tlog\link.command.1.tlog" />
+    <None Include="C:\Users\nicol\Documents\Travail\2A\IN204\Projet\RayTracing-Nicolas-Arthur\Projet Test\src\Debug\Projet Test.tlog\link.read.1.tlog" />
+    <None Include="C:\Users\nicol\Documents\Travail\2A\IN204\Projet\RayTracing-Nicolas-Arthur\Projet Test\src\Debug\Projet Test.tlog\link.write.1.tlog" />
+    <None Include="C:\Users\nicol\Documents\Travail\2A\IN204\Projet\RayTracing-Nicolas-Arthur\Projet Test\src\Debug\Projet Test.tlog\unsuccessfulbuild" />
+    <None Include="C:\Users\nicol\Documents\Travail\2A\IN204\Projet\RayTracing-Nicolas-Arthur\Projet Test\src\Debug\vc142.idb" />
+    <None Include="C:\Users\nicol\Documents\Travail\2A\IN204\Projet\RayTracing-Nicolas-Arthur\Projet Test\src\Debug\vc142.pdb" />
+    <None Include="C:\Users\nicol\Documents\Travail\2A\IN204\Projet\RayTracing-Nicolas-Arthur\Projet Test\src\Projet Test.vcxproj" />
+    <None Include="C:\Users\nicol\Documents\Travail\2A\IN204\Projet\RayTracing-Nicolas-Arthur\Projet Test\src\Projet Test.vcxproj.filters" />
+    <None Include="C:\Users\nicol\Documents\Travail\2A\IN204\Projet\RayTracing-Nicolas-Arthur\Projet Test\src\Projet Test.vcxproj.user" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{D0AEA983-6337-36DF-BEF0-6F01918F3A1A}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>
