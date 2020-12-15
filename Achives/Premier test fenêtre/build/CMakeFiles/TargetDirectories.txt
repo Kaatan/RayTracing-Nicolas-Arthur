@@ -1,9 +1,0 @@
-C:/Users/nicol/Documents/Travail/2A/IN204/Projet/RayTracing-Nicolas-Arthur/Projet Test/build/CMakeFiles/whatever.dir
-C:/Users/nicol/Documents/Travail/2A/IN204/Projet/RayTracing-Nicolas-Arthur/Projet Test/build/CMakeFiles/INSTALL.dir
-C:/Users/nicol/Documents/Travail/2A/IN204/Projet/RayTracing-Nicolas-Arthur/Projet Test/build/CMakeFiles/ALL_BUILD.dir
-C:/Users/nicol/Documents/Travail/2A/IN204/Projet/RayTracing-Nicolas-Arthur/Projet Test/build/CMakeFiles/ZERO_CHECK.dir
-C:/Users/nicol/Documents/Travail/2A/IN204/Projet/RayTracing-Nicolas-Arthur/Projet Test/build/External/glfw/CMakeFiles/uninstall.dir
-C:/Users/nicol/Documents/Travail/2A/IN204/Projet/RayTracing-Nicolas-Arthur/Projet Test/build/External/glfw/CMakeFiles/INSTALL.dir
-C:/Users/nicol/Documents/Travail/2A/IN204/Projet/RayTracing-Nicolas-Arthur/Projet Test/build/External/glfw/CMakeFiles/ALL_BUILD.dir
-C:/Users/nicol/Documents/Travail/2A/IN204/Projet/RayTracing-Nicolas-Arthur/Projet Test/build/External/glfw/src/CMakeFiles/glfw.dir
-C:/Users/nicol/Documents/Travail/2A/IN204/Projet/RayTracing-Nicolas-Arthur/Projet Test/build/External/glfw/src/CMakeFiles/INSTALL.dir
