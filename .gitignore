@@ -1,5 +1,10 @@
 #Untracked Files :
 
 Test_SDL/Sources/Makefile
+src/copy.cpp
+src/main_.cpp
+.vscode/c_cpp_properties.json
+.vscode/settings.json
+hello_world.bmp
 Makefile
 rt.exe
