@@ -20,14 +20,19 @@ using namespace Eigen;
 #define HEIGHT 720
 
 
-void renderAll(Vector3f* pixels, int Width, int Height, SDL_Renderer* SdlRenderer){
+void renderAll(Vector3f* pixels, int Width, int Height, SDL_Renderer* SdlRenderer, SDL_Texture* m_texture){
 	printf("Entered rendering\n");
+	SDL_SetRenderDrawColor(SdlRenderer, 255, 255, 255, 255);
 	SDL_RenderClear(SdlRenderer);
+    SDL_RenderCopy(SdlRenderer, m_texture, NULL, NULL);
+	
 	for (int i = 0; i < Height; i++){
 		for (int j = 0; j < Width; j++){
-			SDL_SetRenderDrawColor(SdlRenderer, (Uint8) (255 * pixels[j+ Width*i](0)), (Uint8) (255 * pixels[j+ Width * i](1)), (Uint8) (255 * pixels[j + Width * i](2)), 255);
-			//printf("Couleurs du pixel :  %f  %f  %f", pixels[j+ Width*i](0), pixels[j+ Width * i](1), pixels[j + Width * i](2));
-			SDL_RenderDrawPoint(SdlRenderer, j, i);
+			if (pixels[j+ Width*i](0) != 2.0f || pixels[j+ Width*i](1) != 2.0f ||pixels[j+ Width*i](2) != 2.0f){
+				SDL_SetRenderDrawColor(SdlRenderer, (Uint8) (255 * pixels[j+ Width*i](0)), (Uint8) (255 * pixels[j+ Width * i](1)), (Uint8) (255 * pixels[j + Width * i](2)), 255);
+				//printf("Couleurs du pixel :  %f  %f  %f", pixels[j+ Width*i](0), pixels[j+ Width * i](1), pixels[j + Width * i](2));
+				SDL_RenderDrawPoint(SdlRenderer, j, i);
+			}
 		}
 	}
 	SDL_RenderPresent(SdlRenderer);//mise à jour de l'écran
@@ -69,7 +74,8 @@ int main(int argc, char** args) {
 	
 	SDL_Window* window = NULL;
 	SDL_Renderer* sdlRenderer = NULL;
-
+	SDL_Texture* sdlTexture = SDL_CreateTexture( sdlRenderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STATIC, WIDTH, HEIGHT);
+	//IMG_LoadTexture(m_renderer, "data/galaxie.jpg"); //changer le fichier pour un fond blanc
 
 
 	// Initialize SDL. SDL_Init will return -1 if it fails.
@@ -107,13 +113,6 @@ int main(int argc, char** args) {
 		// End the program
 		return 1;
 	}
-    
-	SDL_SetRenderDrawColor(sdlRenderer, 0, 0, 0, 255); //Sélection d'une couleur
-	SDL_RenderClear(sdlRenderer); //Peinture de tout l'écran en Noir
-	
-    //SDL_Delay(1000);//Short wait for good measure
-    SDL_RenderPresent(sdlRenderer);//mise à jour de l'écran
-
 
 	//printf("Finished SDL init\n");
 
@@ -157,7 +156,7 @@ int main(int argc, char** args) {
 	
 	mid = chrono::steady_clock::now();
 
-	renderAll(pixels.data(), WIDTH, HEIGHT, sdlRenderer);
+	renderAll(pixels.data(), WIDTH, HEIGHT, sdlRenderer, sdlTexture);
 
     end = chrono::steady_clock::now();
     chrono::duration<double> global_elaps = end - start;
