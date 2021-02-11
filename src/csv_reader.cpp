@@ -66,9 +66,3 @@ std::vector<std::vector<std::string>> readCSV(std::istream &in) {
     return table;
 }
 
-void addSpheresFromFile(std::string fileName) {
-  std::ofstream file;
-  myfile.open (fileName);
-  myfile << "Writing this to a file.\n";
-  myfile.close();
-}

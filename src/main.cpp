@@ -1,12 +1,13 @@
 #include <cstdio>
 #include <iostream>
+#include <fstream>
 #include <vector>
 #include <chrono>
 
 #include "shapes.h"
 #include "ray.h"
 
-//#include "csv_reader.cpp"
+#include "csv_reader.cpp"
 
 #include "Eigen/Dense"
 
@@ -24,7 +25,7 @@ using namespace Eigen;
 
 void renderAll(Vector3f* pixels, int Width, int Height, SDL_Renderer* SdlRenderer, SDL_Texture* m_texture){
 	printf("Entered rendering\n");
-	//SDL_SetRenderTarget(SdlRenderer, m_texture);
+	SDL_SetRenderTarget(SdlRenderer, m_texture);
 	SDL_SetRenderDrawColor(SdlRenderer, 255, 255, 255, 255); //Sélectionne une couleur blanche
 	SDL_RenderClear(SdlRenderer); //Colorie tout en blanc
     
@@ -39,7 +40,7 @@ void renderAll(Vector3f* pixels, int Width, int Height, SDL_Renderer* SdlRendere
 			}
 		}
 	}
-	//SDL_RenderCopy(SdlRenderer, m_texture, NULL, NULL);
+	SDL_RenderCopy(SdlRenderer, m_texture, NULL, NULL);
 }
 
 void ComputeAll(vector<Sphere> &spheres, vector<Cube> &cubes, int width, int height, Vector3f* pixels){
@@ -73,8 +74,46 @@ void ComputeAll(vector<Sphere> &spheres, vector<Cube> &cubes, int width, int hei
     return;
 }
 
+void addSphereFromLine(std::vector<std::string> elem, vector<Sphere> &spheres) {
+	try {
+		float x,y,z; //Sphere position
+		float R; //Radius
+		float r,g,b; //Sphere color
+		float reflectivity, transparency;
+		float er, eg, eb; //Emission color
 
+		x = stof(elem[0]);
+		y = stof(elem[1]);
+		z = stof(elem[2]);
+		R = stof(elem[3]);
+		r = stof(elem[4]);
+		g = stof(elem[5]);
+		b = stof(elem[6]);
+		reflectivity = stof(elem[7]);
+		transparency = stof(elem[8]);
+		er = stof(elem[9]);
+		eg = stof(elem[10]);
+		eb = stof(elem[11]);
 
+		spheres.push_back(Sphere(Vector3f( x, y, z), R, Vector3f(r, g, b), reflectivity, transparency, Vector3f(er,eg,eb))); 
+	}
+	catch(...) {cout << "Incorrect parameters";}
+}
+
+void addSpheresFromFile(string fileName, vector<Sphere> &spheres) {
+    std::filebuf fb;
+    if (fb.open (fileName,ios::in))
+    {
+        istream is(&fb);
+        std::vector<std::vector<std::string>> table = readCSV(is);
+		table.erase(table.begin());
+		for (std::vector<std::string> elem : table) {
+			addSphereFromLine(elem, spheres);
+		}
+        fb.close();
+    }
+
+}
 
 
 
@@ -131,19 +170,9 @@ int main(int argc, char** args) {
 
 
 	//printf("Finished empty Sphere vector creation\n");
-
-    // position, radius, surface color, reflectivity, transparency, emission color
-    spheres.push_back(Sphere(Vector3f( 0.0, -10004, -20), 10000, Vector3f(0.20, 0.20, 0.20), 0, 0.0, Vector3f(0,0,0))); 
-    spheres.push_back(Sphere(Vector3f( 0.0,      0, -20),     4, Vector3f(1.00, 0.32, 0.36), 1, 0.5, Vector3f(0,0,0))); 
-    spheres.push_back(Sphere(Vector3f( 5.0,     -1, -15),     2, Vector3f(0.90, 0.76, 0.46), 1, 0.0, Vector3f(0,0,0))); 
-    spheres.push_back(Sphere(Vector3f( 5.0,      0, -25),     3, Vector3f(0.65, 0.77, 0.97), 1, 0.0, Vector3f(0,0,0))); 
-    spheres.push_back(Sphere(Vector3f(-5.5,      0, -15),     3, Vector3f(0.90, 0.90, 0.90), 1, 0.0, Vector3f(0,0,0))); 
-
-	//printf("Finished Shpere Objects addition\n");
-    // light
-    spheres.push_back(Sphere(Vector3f( 0.0,     20, -30),     3, Vector3f(0.00, 0.00, 0.00), 0, 0.0, Vector3f(3,3,3))); 
-
-	//printf("Finished Light creation\n");
+	
+	addSpheresFromFile("spheres.csv", spheres);
+	cout << spheres.size() << endl;
 
 	vector<Cube> cubes;
 
@@ -157,8 +186,6 @@ int main(int argc, char** args) {
 
 	chrono::steady_clock::time_point start, mid, mmid, end;
 
-
-	for (int i =0; i<5; i++){
 
 		start = chrono::steady_clock::now();
 
@@ -183,8 +210,6 @@ int main(int argc, char** args) {
 		cout <<"Computing time " << calc_elaps.count()*1000 <<  "  Rendering time " << render_elaps.count()*1000 << "  Total time " <<global_elaps.count()*1000 << ", FPS " << 1/global_elaps.count() << std::endl;
 		cout << "Rendering calculation time " << ccalc_elaps.count()*1000 << endl;
 		//printf("Finished rendering");
-
-	}
 
 	// Wait for a input in the cmd
 	system("pause");
