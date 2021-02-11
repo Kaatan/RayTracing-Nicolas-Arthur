@@ -6,6 +6,8 @@
 #include "shapes.h"
 #include "ray.h"
 
+//#include "csv_reader.cpp"
+
 #include "Eigen/Dense"
 
 #include <SDL2/SDL.h>
@@ -22,20 +24,22 @@ using namespace Eigen;
 
 void renderAll(Vector3f* pixels, int Width, int Height, SDL_Renderer* SdlRenderer, SDL_Texture* m_texture){
 	printf("Entered rendering\n");
-	SDL_SetRenderDrawColor(SdlRenderer, 255, 255, 255, 255);
-	SDL_RenderClear(SdlRenderer);
-    SDL_RenderCopy(SdlRenderer, m_texture, NULL, NULL);
+	//SDL_SetRenderTarget(SdlRenderer, m_texture);
+	SDL_SetRenderDrawColor(SdlRenderer, 255, 255, 255, 255); //Sélectionne une couleur blanche
+	SDL_RenderClear(SdlRenderer); //Colorie tout en blanc
+    
 	
 	for (int i = 0; i < Height; i++){
 		for (int j = 0; j < Width; j++){
 			if (pixels[j+ Width*i](0) != 2.0f || pixels[j+ Width*i](1) != 2.0f ||pixels[j+ Width*i](2) != 2.0f){
 				SDL_SetRenderDrawColor(SdlRenderer, (Uint8) (255 * pixels[j+ Width*i](0)), (Uint8) (255 * pixels[j+ Width * i](1)), (Uint8) (255 * pixels[j + Width * i](2)), 255);
 				//printf("Couleurs du pixel :  %f  %f  %f", pixels[j+ Width*i](0), pixels[j+ Width * i](1), pixels[j + Width * i](2));
+				//SDL_SetRenderDrawColor(SdlRenderer, 255, 0, 0, 255); //Sélectionne une couleur rouge
 				SDL_RenderDrawPoint(SdlRenderer, j, i);
 			}
 		}
 	}
-	SDL_RenderPresent(SdlRenderer);//mise à jour de l'écran
+	//SDL_RenderCopy(SdlRenderer, m_texture, NULL, NULL);
 }
 
 void ComputeAll(vector<Sphere> &spheres, vector<Cube> &cubes, int width, int height, Vector3f* pixels){
@@ -70,11 +74,16 @@ void ComputeAll(vector<Sphere> &spheres, vector<Cube> &cubes, int width, int hei
 }
 
 
+
+
+
+
+
 int main(int argc, char** args) {
 	
 	SDL_Window* window = NULL;
 	SDL_Renderer* sdlRenderer = NULL;
-	SDL_Texture* sdlTexture = SDL_CreateTexture( sdlRenderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STATIC, WIDTH, HEIGHT);
+	SDL_Texture* sdlTexture = SDL_CreateTexture( sdlRenderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STREAMING, WIDTH, HEIGHT);
 	//IMG_LoadTexture(m_renderer, "data/galaxie.jpg"); //changer le fichier pour un fond blanc
 
 
@@ -146,26 +155,36 @@ int main(int argc, char** args) {
 
 	printf("Finished pixels table creation\n");
 
-	chrono::steady_clock::time_point start, mid, end;
+	chrono::steady_clock::time_point start, mid, mmid, end;
 
-    start = chrono::steady_clock::now();
 
-	ComputeAll(spheres, cubes, WIDTH, HEIGHT, pixels.data());
-	
-	printf("Finished computing");
-	
-	mid = chrono::steady_clock::now();
+	for (int i =0; i<5; i++){
 
-	renderAll(pixels.data(), WIDTH, HEIGHT, sdlRenderer, sdlTexture);
+		start = chrono::steady_clock::now();
 
-    end = chrono::steady_clock::now();
-    chrono::duration<double> global_elaps = end - start;
-    chrono::duration<double> calc_elaps = mid - start;
-	chrono::duration<double> render_elaps = end - mid;
-	
-	cout <<"Computing time " << calc_elaps.count()*1000 << "  Rendering time " << render_elaps.count()*1000 << "  Total time" <<global_elaps.count()*1000 << ", FPS " << 1/global_elaps.count() << std::endl;
+		ComputeAll(spheres, cubes, WIDTH, HEIGHT, pixels.data());
 
-	//printf("Finished rendering");
+		printf("Finished computing");
+
+		mid = chrono::steady_clock::now();
+
+		renderAll(pixels.data(), WIDTH, HEIGHT, sdlRenderer, sdlTexture);
+
+		mmid = chrono::steady_clock::now();
+
+		SDL_RenderPresent(sdlRenderer);//mise à jour de l'écran
+
+		end = chrono::steady_clock::now();
+		chrono::duration<double> global_elaps = end - start;
+		chrono::duration<double> calc_elaps = mid - start;
+		chrono::duration<double> ccalc_elaps = mmid - mid;
+		chrono::duration<double> render_elaps = end - mmid;
+
+		cout <<"Computing time " << calc_elaps.count()*1000 <<  "  Rendering time " << render_elaps.count()*1000 << "  Total time " <<global_elaps.count()*1000 << ", FPS " << 1/global_elaps.count() << std::endl;
+		cout << "Rendering calculation time " << ccalc_elaps.count()*1000 << endl;
+		//printf("Finished rendering");
+
+	}
 
 	// Wait for a input in the cmd
 	system("pause");
