@@ -15,7 +15,9 @@
 #define INFINITY 1e8
 #endif
 
+#ifndef MAX_RAY_DEPTH
 #define MAX_RAY_DEPTH 5
+#endif
 
 using namespace Eigen;
 using namespace std;

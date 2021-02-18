@@ -4,6 +4,8 @@
 #include <vector>
 #include <chrono>
 
+#include <cmath>
+
 #include "shapes.h"
 #include "ray.h"
 
@@ -24,29 +26,43 @@ using namespace Eigen;
 
 
 void renderAll(Vector3f* pixels, int Width, int Height, SDL_Renderer* SdlRenderer, SDL_Texture* m_texture){
-	printf("Entered rendering\n");
+	//printf("Entered rendering\n");
 	SDL_SetRenderTarget(SdlRenderer, m_texture);
 	SDL_SetRenderDrawColor(SdlRenderer, 255, 255, 255, 255); //Sélectionne une couleur blanche
 	SDL_RenderClear(SdlRenderer); //Colorie tout en blanc
-    
-	
+
+	// for (int i = 0; i < Height; i++){
+	// 	for (int j = 0; j < Width; j++){
+	// 		if (pixels[j+ Width*i](0) != 2.0f || pixels[j+ Width*i](1) != 2.0f ||pixels[j+ Width*i](2) != 2.0f){
+	// 			SDL_SetRenderDrawColor(SdlRenderer, (Uint8) (255 * pixels[j+ Width*i](0)), (Uint8) (255 * pixels[j+ Width * i](1)), (Uint8) (255 * pixels[j + Width * i](2)), 255);
+	// 			//printf("Couleurs du pixel :  %f  %f  %f", pixels[j+ Width*i](0), pixels[j+ Width * i](1), pixels[j + Width * i](2));
+	// 			//SDL_SetRenderDrawColor(SdlRenderer, 255, 0, 0, 255); //Sélectionne une couleur rouge
+	// 			SDL_RenderDrawPoint(SdlRenderer, j, i);
+	// 		}
+	// 	}
+	// }
+	unsigned char* texture_pixels;
+	int pitch;
+
+	SDL_LockTexture(m_texture, NULL, (void**)&texture_pixels, &pitch );
 	for (int i = 0; i < Height; i++){
 		for (int j = 0; j < Width; j++){
-			if (pixels[j+ Width*i](0) != 2.0f || pixels[j+ Width*i](1) != 2.0f ||pixels[j+ Width*i](2) != 2.0f){
-				SDL_SetRenderDrawColor(SdlRenderer, (Uint8) (255 * pixels[j+ Width*i](0)), (Uint8) (255 * pixels[j+ Width * i](1)), (Uint8) (255 * pixels[j + Width * i](2)), 255);
-				//printf("Couleurs du pixel :  %f  %f  %f", pixels[j+ Width*i](0), pixels[j+ Width * i](1), pixels[j + Width * i](2));
-				//SDL_SetRenderDrawColor(SdlRenderer, 255, 0, 0, 255); //Sélectionne une couleur rouge
-				SDL_RenderDrawPoint(SdlRenderer, j, i);
-			}
+			texture_pixels[4*(j + Width*i)] = 0;
+			texture_pixels[4*(j + Width*i)+1] = (char) (255 * pixels[j+ Width*i](2));
+			texture_pixels[4*(j + Width*i)+2] = (char) (255 * pixels[j+ Width*i](1));
+			texture_pixels[4*(j + Width*i)+3] = (char) (255 * pixels[j+ Width*i](0));
 		}
 	}
+
+	SDL_UnlockTexture(m_texture);
+
 	SDL_RenderCopy(SdlRenderer, m_texture, NULL, NULL);
 }
 
 void ComputeAll(vector<Sphere> &spheres, vector<Cube> &cubes, int width, int height, Vector3f* pixels){
 	//modofie directement le tableau de vecteurs pixels
 
-	printf("Starting computations\n");
+	//printf("Starting computations\n");
      
     float invWidth = 1 / float(width), invHeight = 1 / float(height); 
     float fov = 30, aspectratio = width / float(height); 
@@ -122,7 +138,6 @@ int main(int argc, char** args) {
 	
 	SDL_Window* window = NULL;
 	SDL_Renderer* sdlRenderer = NULL;
-	SDL_Texture* sdlTexture = SDL_CreateTexture( sdlRenderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STREAMING, WIDTH, HEIGHT);
 	//IMG_LoadTexture(m_renderer, "data/galaxie.jpg"); //changer le fichier pour un fond blanc
 
 
@@ -145,6 +160,7 @@ int main(int argc, char** args) {
 	window = SDL_CreateWindow("Affichage", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
         WIDTH, HEIGHT, SDL_WINDOW_SHOWN); //Création de la fenêtre vidéo
 
+
 	// Make sure creating the window succeeded
 	if (window == NULL) {
         printf("Impossible de créer l'affichage de dimensions %dx%d : %s\n", WIDTH, HEIGHT, SDL_GetError());
@@ -162,6 +178,7 @@ int main(int argc, char** args) {
 		return 1;
 	}
 
+	SDL_Texture* sdlTexture = SDL_CreateTexture( sdlRenderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STREAMING, WIDTH, HEIGHT);
 	//printf("Finished SDL init\n");
 
 
@@ -172,11 +189,10 @@ int main(int argc, char** args) {
 	//printf("Finished empty Sphere vector creation\n");
 	
 	addSpheresFromFile("spheres.csv", spheres);
-	cout << spheres.size() << endl;
 
-	vector<Cube> cubes;
+	 vector<Cube> cubes;
 
-	printf("Finished Cube vector creation\n");
+	// printf("Finished Cube vector creation\n");
 	
 	//Vector3f pixels[WIDTH*HEIGHT];
 
@@ -186,12 +202,15 @@ int main(int argc, char** args) {
 
 	chrono::steady_clock::time_point start, mid, mmid, end;
 
+	chrono::duration<double> t = (chrono::duration<double>)0;
+
+	while(1) {
 
 		start = chrono::steady_clock::now();
 
 		ComputeAll(spheres, cubes, WIDTH, HEIGHT, pixels.data());
 
-		printf("Finished computing");
+		//printf("Finished computing\n");
 
 		mid = chrono::steady_clock::now();
 
@@ -202,15 +221,24 @@ int main(int argc, char** args) {
 		SDL_RenderPresent(sdlRenderer);//mise à jour de l'écran
 
 		end = chrono::steady_clock::now();
+
 		chrono::duration<double> global_elaps = end - start;
 		chrono::duration<double> calc_elaps = mid - start;
-		chrono::duration<double> ccalc_elaps = mmid - mid;
-		chrono::duration<double> render_elaps = end - mmid;
+		chrono::duration<double> render_elaps = end - mid;
+		t+= global_elaps;
 
-		cout <<"Computing time " << calc_elaps.count()*1000 <<  "  Rendering time " << render_elaps.count()*1000 << "  Total time " <<global_elaps.count()*1000 << ", FPS " << 1/global_elaps.count() << std::endl;
-		cout << "Rendering calculation time " << ccalc_elaps.count()*1000 << endl;
+		spheres[1].center(0)=1*sin(t.count()*5);
+
+		spheres[2].center(0)=-10*sin(t.count()*5);
+		spheres[2].center(2)=-20+10*cos(t.count()*5);
+
+		cout <<"Compute time " << calc_elaps.count()*1000
+				<<  ",  Render time " << render_elaps.count()*1000
+				<< ",  Total time " << global_elaps.count()*1000
+				<< ", FPS " << 1/global_elaps.count() << "\r"
+				<< std::flush;
 		//printf("Finished rendering");
-
+	}
 	// Wait for a input in the cmd
 	system("pause");
 
