@@ -30,9 +30,9 @@ Vector3f trace_sphere(const Vector3f &rayorig, const Vector3f &raydir, vector<Sp
             if (d0 < tnear) { 
                 tnear = d0; 
                 sphere = &spheres[i]; 
-            } 
-        } 
-    } 
+            }
+        }
+    }
 
 
     //Si il n'y a pas de collision, renvoyer la couleur de fond
@@ -66,7 +66,7 @@ Vector3f trace_sphere(const Vector3f &rayorig, const Vector3f &raydir, vector<Sp
         float fresneleffect = mix(pow(1 - facingratio, 3), 1, 0.1); 
 
         //Calcul de la rélfexion
-        Vector3f refldir = raydir - nhit * 2 * raydir.dot(nhit); 
+        Vector3f refldir = raydir - nhit * 2.0f * raydir.dot(nhit); 
         refldir.normalize(); 
         
         //Puisqu'il y a réflexion, on tire un nouveau rayon.
@@ -74,7 +74,7 @@ Vector3f trace_sphere(const Vector3f &rayorig, const Vector3f &raydir, vector<Sp
         Vector3f refraction = Vector3f(0,0,0); 
 
         // Calcul de la réfraction (=> transmission si transparence)
-        if (sphere->transparency > 0) { 
+        if (sphere->transparency) { 
             float ior = 1.1, eta = (inside) ? ior : 1 / ior; // are we inside or outside the surface? 
             float cosi = -nhit.dot(raydir); 
             float k = 1 - eta * eta * (1 - cosi * cosi); 
@@ -86,7 +86,7 @@ Vector3f trace_sphere(const Vector3f &rayorig, const Vector3f &raydir, vector<Sp
         } 
 
         //On ajoute à chaque itération les couleurs appliquées au point après tous les effets de réflexion et réfraction.
-        surfaceColor = (reflection*fresneleffect + (refraction * (1 - fresneleffect) * sphere->transparency).cwiseProduct(sphere->surfaceColor));  
+        surfaceColor = (reflection*fresneleffect + (refraction * (1 - fresneleffect) * sphere->transparency)).cwiseProduct(sphere->surfaceColor);  
     } 
     else { 
         //Si ni transparence ni réflexion, c'est un objet diffusant, pas besoin de continuer le raytracing : il renvoie dans toutes les directions. On arrête la récursion.
@@ -94,10 +94,10 @@ Vector3f trace_sphere(const Vector3f &rayorig, const Vector3f &raydir, vector<Sp
         //On explore alors toutes les sphères à la recherche d'une source de lumière pour savoir si le point est éclairé  : s'il y a un chemin direct entre l'objet et la source.
         
         for (unsigned i = 0; i < spheres.size(); ++i) { 
-            if (spheres[i].emissionColor(0) > 0) { 
+            if (spheres[i].emissionColor(0) > 0 || spheres[i].emissionColor(1) > 0 || spheres[i].emissionColor(2) > 0) { 
                 //Si source de lumière :
                 //Vector3f transmission = Vector3f(1, 1, 1); 
-                float transmission = 1.0; //Transmission de la couleur par défaut de 1. Elle sera mise à 0 s'il y a un obstacle.
+                float transmission = 1.0f; //Transmission de la couleur par défaut de 1. Elle sera mise à 0 s'il y a un obstacle.
                 Vector3f lightDirection = spheres[i].center - phit; //On détermine la direction entre la source et le point d'impact actuel
                 lightDirection.normalize(); 
 
@@ -106,23 +106,14 @@ Vector3f trace_sphere(const Vector3f &rayorig, const Vector3f &raydir, vector<Sp
                     if (i != j) { 
                         float d0, d1; 
                         if (spheres[j].intersect(phit + nhit * bias, lightDirection, d0, d1)) { //S'il y a bien un objet, il cache la lumière : la transmission est nulle.
-                            //transmission = Vector3f(0, 0, 0); 
                             transmission = 0.0f;
                             break; 
                         } 
                     } 
                 } 
                 //Ajout du résultat à surfaceColor
-                //surfaceColor += ((sphere->surfaceColor.cwiseProduct(transmission)).cwiseProduct(spheres[i].emissionColor)) * std::max(float(0), nhit.dot(lightDirection)); 
                 surfaceColor += (((sphere->surfaceColor*transmission) * std::max(float(0), nhit.dot(lightDirection))).cwiseProduct(spheres[i].emissionColor)); 
                 
-                
-                if(sphere->surfaceColor[0]<0.96 && sphere->surfaceColor[0]>0.94){
-                    printf("Couleurs de la sphere : %f, %f, %f ; ", sphere->surfaceColor[0], sphere->surfaceColor[1], sphere->surfaceColor[2]);
-                    //printf("Indice de la transparence : %f", sphere->transparency);
-                    printf("Surface color : %f %f %f ; ", surfaceColor[0], surfaceColor[1], surfaceColor[2]);
-                    printf("Produit scalaire : %f \n", nhit.dot(lightDirection));
-                }
                 
                 //surfaceColor += sphere->surfaceColor*transmission* std::max(float(0), nhit.dot(lightDirection)) ; 
                 //Produit terme à terme entre la couleur de la sphère et la valeur de transmission (1 ou 0), en produit terme à terme avec la couleur de la lumière, le tout multiplié par le scalaire entre la direction et la normale.

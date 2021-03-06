@@ -19,7 +19,7 @@
 using namespace std;
 using namespace Eigen;
 
-#define WIDTH 1280
+#define WIDTH 1080
 #define HEIGHT 720
 
 
@@ -32,7 +32,7 @@ void renderAll(Vector3f* pixels, int Width, int Height, SDL_Renderer* SdlRendere
 	SDL_LockTexture(m_texture, NULL, (void**)&texture_pixels, &pitch ); //Verrouillage de la texture pour l'éditer
 	for (int i = 0; i < Height; i++){
 		for (int j = 0; j < Width; j++){
-			texture_pixels[4*(j + Width*i)] = 0;
+			texture_pixels[4*(j + Width*i)] = 255;
 			texture_pixels[4*(j + Width*i)+1] = (char) (255 * pixels[j+ Width*i](2));
 			texture_pixels[4*(j + Width*i)+2] = (char) (255 * pixels[j+ Width*i](1));
 			texture_pixels[4*(j + Width*i)+3] = (char) (255 * pixels[j+ Width*i](0));
