@@ -9,8 +9,6 @@
 #include "shapes.h"
 #include "ray.h"
 
-#include "csv_reader.cpp"
-
 #include "Eigen/Dense"
 
 #include <SDL2/SDL.h>
@@ -26,25 +24,12 @@ using namespace Eigen;
 
 
 void renderAll(Vector3f* pixels, int Width, int Height, SDL_Renderer* SdlRenderer, SDL_Texture* m_texture){
-	//printf("Entered rendering\n");
-	SDL_SetRenderTarget(SdlRenderer, m_texture);
-	SDL_SetRenderDrawColor(SdlRenderer, 255, 255, 255, 255); //Sélectionne une couleur blanche
-	SDL_RenderClear(SdlRenderer); //Colorie tout en blanc
 
-	// for (int i = 0; i < Height; i++){
-	// 	for (int j = 0; j < Width; j++){
-	// 		if (pixels[j+ Width*i](0) != 2.0f || pixels[j+ Width*i](1) != 2.0f ||pixels[j+ Width*i](2) != 2.0f){
-	// 			SDL_SetRenderDrawColor(SdlRenderer, (Uint8) (255 * pixels[j+ Width*i](0)), (Uint8) (255 * pixels[j+ Width * i](1)), (Uint8) (255 * pixels[j + Width * i](2)), 255);
-	// 			//printf("Couleurs du pixel :  %f  %f  %f", pixels[j+ Width*i](0), pixels[j+ Width * i](1), pixels[j + Width * i](2));
-	// 			//SDL_SetRenderDrawColor(SdlRenderer, 255, 0, 0, 255); //Sélectionne une couleur rouge
-	// 			SDL_RenderDrawPoint(SdlRenderer, j, i);
-	// 		}
-	// 	}
-	// }
+	SDL_SetRenderTarget(SdlRenderer, m_texture);//Ecriture sur la texture liée au renderer
 	unsigned char* texture_pixels;
 	int pitch;
 
-	SDL_LockTexture(m_texture, NULL, (void**)&texture_pixels, &pitch );
+	SDL_LockTexture(m_texture, NULL, (void**)&texture_pixels, &pitch ); //Verrouillage de la texture pour l'éditer
 	for (int i = 0; i < Height; i++){
 		for (int j = 0; j < Width; j++){
 			texture_pixels[4*(j + Width*i)] = 0;
@@ -52,153 +37,98 @@ void renderAll(Vector3f* pixels, int Width, int Height, SDL_Renderer* SdlRendere
 			texture_pixels[4*(j + Width*i)+2] = (char) (255 * pixels[j+ Width*i](1));
 			texture_pixels[4*(j + Width*i)+3] = (char) (255 * pixels[j+ Width*i](0));
 		}
-	}
+	} //Ecriture sur la texture
 
-	SDL_UnlockTexture(m_texture);
+	SDL_UnlockTexture(m_texture); //Déverrouillage
 
-	SDL_RenderCopy(SdlRenderer, m_texture, NULL, NULL);
+	SDL_RenderCopy(SdlRenderer, m_texture, NULL, NULL); //Copie de la texture sur le renderer
 }
 
-void ComputeAll(vector<Sphere> &spheres, vector<Cube> &cubes, int width, int height, Vector3f* pixels){
-	//modofie directement le tableau de vecteurs pixels
 
-	//printf("Starting computations\n");
-     
+
+void ComputeAll(vector<Sphere> &spheres, vector<Cube> &cubes, int width, int height, Vector3f* pixels){
+	//modifie directement le tableau de vecteurs pixels
+
+    //Définitions des paramètres
     float invWidth = 1 / float(width), invHeight = 1 / float(height); 
     float fov = 30, aspectratio = width / float(height); 
     float angle = tan(M_PI * 0.5 * fov / 180.); 
-    // Trace rays
-
+    
+	// Traçage des rayons avec parallélisation
 	#pragma omp parallel for simd
     for (int y = 0; y < height; ++y) { 
         for (int x = 0; x < width; ++x) { 
-            
+            //Calcul de l'angle d'envoi du rayon initial
 			float xx = (2 * ((x + 0.5) * invWidth) - 1) * angle * aspectratio; 
             float yy = (1 - 2 * ((y + 0.5) * invHeight)) * angle; 
-			//Calcul de l'angle d'envoie du rayon initial
 			
+			//Création d'un objet rayon
             Vector3f raydir(xx, yy, -1); 
-			//printf("Created raydir\n");
             raydir.normalize(); 
-			// printf("Normalized raydir\n");
-			//printf("Entering ")
+			
+			//Traçage du rayon
             pixels[x + width*y] = trace_sphere(Vector3f(0,0,0), raydir, spheres, 0); 
-			//pixels[x + width*y] = pixels[x + width*y] + trace_cube(Vector3f(0), raydir, cubes, 0);
+			
         } 
     } 
     
     return;
 }
 
-void addSphereFromLine(std::vector<std::string> elem, vector<Sphere> &spheres) {
-	try {
-		float x,y,z; //Sphere position
-		float R; //Radius
-		float r,g,b; //Sphere color
-		float reflectivity, transparency;
-		float er, eg, eb; //Emission color
-
-		x = stof(elem[0]);
-		y = stof(elem[1]);
-		z = stof(elem[2]);
-		R = stof(elem[3]);
-		r = stof(elem[4]);
-		g = stof(elem[5]);
-		b = stof(elem[6]);
-		reflectivity = stof(elem[7]);
-		transparency = stof(elem[8]);
-		er = stof(elem[9]);
-		eg = stof(elem[10]);
-		eb = stof(elem[11]);
-
-		spheres.push_back(Sphere(Vector3f( x, y, z), R, Vector3f(r, g, b), reflectivity, transparency, Vector3f(er,eg,eb))); 
-	}
-	catch(...) {cout << "Incorrect parameters";}
-}
-
-void addSpheresFromFile(string fileName, vector<Sphere> &spheres) {
-    std::filebuf fb;
-    if (fb.open (fileName,ios::in))
-    {
-        istream is(&fb);
-        std::vector<std::vector<std::string>> table = readCSV(is);
-		table.erase(table.begin());
-		for (std::vector<std::string> elem : table) {
-			addSphereFromLine(elem, spheres);
-		}
-        fb.close();
-    }
-
-}
-
-
 
 
 int main(int argc, char** args) {
 	
+	//Initialisation de SDL2
 	SDL_Window* window = NULL;
 	SDL_Renderer* sdlRenderer = NULL;
-	//IMG_LoadTexture(m_renderer, "data/galaxie.jpg"); //changer le fichier pour un fond blanc
-
-
-	// Initialize SDL. SDL_Init will return -1 if it fails.
 	if (SDL_Init(SDL_INIT_EVERYTHING) < 0) {
 		cout << "Error initializing SDL: " << SDL_GetError() << endl;
 		system("pause");
-		// End the program
 		return 1;
 	}
-
-	//Set texture filtering to linear
     if (!SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "1"))
     {
         printf("Warning: Linear texture filtering not enabled!");
         return 1;
     }
 
-	// Create our window
+
+
+	//Création d'une fenêtre
 	window = SDL_CreateWindow("Affichage", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
         WIDTH, HEIGHT, SDL_WINDOW_SHOWN); //Création de la fenêtre vidéo
-
-
-	// Make sure creating the window succeeded
-	if (window == NULL) {
-        printf("Impossible de créer l'affichage de dimensions %dx%d : %s\n", WIDTH, HEIGHT, SDL_GetError());
+	if (window == NULL) { //Vérifier si la fenêtre a bien été créée
+        printf("Failed to create display with dimensions %dx%d : %s\n", WIDTH, HEIGHT, SDL_GetError());
         SDL_Quit();
         return 1;
     }
 
-	sdlRenderer = SDL_CreateRenderer(window, -1, 0); //Création d'un truc pour render
 
-	// Make sure getting the surface succeeded
+
+	sdlRenderer = SDL_CreateRenderer(window, -1, 0); //Création d'un renderer
+
 	if (sdlRenderer == NULL) {
-		printf("Impossible de créer le renderer de dimensions %dx%d : %s\n", WIDTH, HEIGHT, SDL_GetError());
+		printf("Failed to create renderer with dimensions %dx%d : %s\n", WIDTH, HEIGHT, SDL_GetError());
         SDL_Quit();
-		// End the program
 		return 1;
 	}
 
 	SDL_Texture* sdlTexture = SDL_CreateTexture( sdlRenderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STREAMING, WIDTH, HEIGHT);
-	//printf("Finished SDL init\n");
 
 
 
-	vector<Sphere> spheres; 
+	vector<Sphere> spheres; 	
+	addSpheresFromFile("spheres.csv", spheres); //Lecture du fichier csv pour ajouter les spheres
+
+	vector<Cube> cubes;
 
 
-	//printf("Finished empty Sphere vector creation\n");
-	
-	addSpheresFromFile("spheres.csv", spheres);
 
-	 vector<Cube> cubes;
-
-	// printf("Finished Cube vector creation\n");
-	
-	//Vector3f pixels[WIDTH*HEIGHT];
-
-	vector<Vector3f> pixels(WIDTH*HEIGHT);
-
+	vector<Vector3f> pixels(WIDTH*HEIGHT); //Cration d'un tableau pour stocker les pixels qui serton affichés
 	printf("Finished pixels table creation\n");
+
+
 
 	chrono::steady_clock::time_point start, mid, mmid, end;
 
@@ -208,46 +138,47 @@ int main(int argc, char** args) {
 
 		start = chrono::steady_clock::now();
 
-		ComputeAll(spheres, cubes, WIDTH, HEIGHT, pixels.data());
-
-		//printf("Finished computing\n");
+		ComputeAll(spheres, cubes, WIDTH, HEIGHT, pixels.data()); //Calcul de l'affichage et exportation dans le tableau pixels
 
 		mid = chrono::steady_clock::now();
 
-		renderAll(pixels.data(), WIDTH, HEIGHT, sdlRenderer, sdlTexture);
+		renderAll(pixels.data(), WIDTH, HEIGHT, sdlRenderer, sdlTexture); //Affichage sur la texture des données du tableau
 
 		mmid = chrono::steady_clock::now();
 
-		SDL_RenderPresent(sdlRenderer);//mise à jour de l'écran
+		SDL_RenderPresent(sdlRenderer);//Mise à jour de l'écran
 
 		end = chrono::steady_clock::now();
+
+
 
 		chrono::duration<double> global_elaps = end - start;
 		chrono::duration<double> calc_elaps = mid - start;
 		chrono::duration<double> render_elaps = end - mid;
 		t+= global_elaps;
 
-		spheres[1].center(0)=1*sin(t.count()*5);
 
+
+		//Mouvement des sphères
+		spheres[1].center(0)=1*sin(t.count()*5);
 		spheres[2].center(0)=-10*sin(t.count()*5);
 		spheres[2].center(2)=-20+10*cos(t.count()*5);
+
+
 
 		cout <<"Compute time " << calc_elaps.count()*1000
 				<<  ",  Render time " << render_elaps.count()*1000
 				<< ",  Total time " << global_elaps.count()*1000
 				<< ", FPS " << 1/global_elaps.count() << "\r"
 				<< std::flush;
-		//printf("Finished rendering");
+		
 	}
-	// Wait for a input in the cmd
+	
+
+
+	//Arrêt de SDL
 	system("pause");
-
-	// Destroy the window. This will also destroy the surface
 	SDL_DestroyWindow(window);
-
-	// Quit SDL
 	SDL_Quit();
-
-	// End the program
 	return 0;
 }
