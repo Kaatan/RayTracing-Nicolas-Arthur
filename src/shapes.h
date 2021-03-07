@@ -8,8 +8,6 @@
 
 #include "Eigen/Dense"
 
-#include "shapes.h"
-
 using namespace Eigen;
 using namespace std;
 

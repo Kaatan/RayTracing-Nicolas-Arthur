@@ -46,13 +46,9 @@ Vector3f trace_sphere(const Vector3f &rayorig, const Vector3f &raydir, vector<Sp
     Vector3f nhit = phit - sphere->center; //Vecteur normal au point d'intersection
     nhit.normalize();
 
-    // If the normal and the view direction are not opposite to each other
-    // reverse the normal direction. That also means we are inside the sphere so set
-    // the inside bool to true. Finally reverse the sign of IdotN which we want
-    // positive.
-    //Détermination du fait qu'on soit ou non à l'intérieur de la sphere. Cela a des influences pour la réflexion.
-    
     float bias = 1e-4; //Création d'une surface autour du point pour détecter s'il y a impact.
+
+    //Détermination du fait qu'on soit ou non à l'intérieur de la sphere. Cela a des influences pour la réflexion.
     bool inside = false; 
     if (raydir.dot(nhit) > 0) nhit = -nhit, inside = true; //On regarde si le sens du regard et de la normale sont les mêmes. Si oui, on est dans la sphere.
 
@@ -75,7 +71,7 @@ Vector3f trace_sphere(const Vector3f &rayorig, const Vector3f &raydir, vector<Sp
 
         // Calcul de la réfraction (=> transmission si transparence)
         if (sphere->transparency) { 
-            float ior = 1.1, eta = (inside) ? ior : 1 / ior; // are we inside or outside the surface? 
+            float ior = 1.5, eta = (inside) ? ior : 1 / ior; // are we inside or outside the surface? 
             float cosi = -nhit.dot(raydir); 
             float k = 1 - eta * eta * (1 - cosi * cosi); 
             Vector3f refrdir = raydir * eta + nhit * (eta *  cosi - sqrt(k)); 
