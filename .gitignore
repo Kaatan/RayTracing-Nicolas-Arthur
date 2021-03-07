@@ -1,7 +1,7 @@
 #Untracked Files :
 
 results/benchmark.csv
-results/images.csv
+results/image.ppm
 .vscode/c_cpp_properties.json
 .vscode/settings.json
 src/main.o
