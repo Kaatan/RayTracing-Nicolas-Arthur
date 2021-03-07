@@ -4,11 +4,17 @@
 #include <cstdio>
 #include <iostream>
 #include <fstream>
+#include <vector>
 
+#include "Eigen/Dense"
+
+#include "parameters.h"
+
+using namespace Eigen;
 using namespace std;
 
 void loadResolution(string fileName, int &width, int &height);
 
-void loadRecursionDepth(string fileName, int& depth);
+void saveImage(string fileName, int width, int height, Vector3f* pixels);
 
 #endif

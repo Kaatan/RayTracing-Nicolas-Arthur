@@ -1,9 +1,12 @@
 #Untracked Files :
 
-src/copy.cpp
-src/main_.cpp
 results/benchmark.csv
+results/images.csv
 .vscode/c_cpp_properties.json
 .vscode/settings.json
+src/main.o
+src/parameters.o
+src/ray.o
+src/shapes.o
 Makefile
 rt.exe

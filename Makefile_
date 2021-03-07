@@ -1,0 +1,43 @@
+#OBJS specifies which files to compile as part of the project
+OBJS = src/main.o src/shapes.o src/ray.o src/parameters.o
+
+#CC specifies which compiler we're using
+CC = g++
+
+#INCLUDE_PATHS specifies the additional include paths we'll need
+INCLUDE_PATHS = -I"C:\Program Files\mingw-w64\x86_64-8.1.0-posix-seh-rt_v6-rev0\mingw64\include" -I"lib\eigen"
+
+#LIBRARY_PATHS specifies the additional library paths we'll need
+LIBRARY_PATHS = -L"C:\Program Files\mingw-w64\x86_64-8.1.0-posix-seh-rt_v6-rev0\mingw64\lib"
+
+#COMPILER_FLAGS specifies the additional compilation options we're using
+# -w suppresses all warnings
+# -Wl,-subsystem,windows gets rid of the console window
+COMPILER_FLAGS = -O3 -Wall -march=native -flto -Wl,-O1
+
+#LINKER_FLAGS specifies the libraries we're linking against
+LINKER_FLAGS = -lmingw32 -lSDL2main -lSDL2 -fopenmp
+
+
+ALL= rt.exe
+
+#This is the target that compiles our executable
+all : $(ALL)
+
+clean:
+	@del /Q /S *.o *.exe 
+
+src/main.o:	src/main.cpp src/shapes.h src/ray.h src/parameters.h
+	$(CC) $(INCLUDE_PATHS) $(LIBRARY_PATHS) $(LINKER_FLAGS) $(COMPILER_FLAGS) -c src/main.cpp -o src/main.o
+
+src/shapes.o : src/shapes.cpp src/shapes.h
+	$(CC) $(INCLUDE_PATHS) $(LIBRARY_PATHS) $(LINKER_FLAGS) $(COMPILER_FLAGS) -c src/shapes.cpp -o src/shapes.o
+
+src/ray.o : src/ray.cpp src/ray.h
+	$(CC) $(INCLUDE_PATHS) $(LIBRARY_PATHS) $(LINKER_FLAGS) $(COMPILER_FLAGS) -c src/ray.cpp -o src/ray.o
+
+src/parameters.o : src/parameters.cpp src/parameters.h
+	$(CC) $(INCLUDE_PATHS) $(LIBRARY_PATHS) $(LINKER_FLAGS) $(COMPILER_FLAGS) -c src/parameters.cpp -o src/parameters.o
+
+rt.exe : $(OBJS)
+	$(CC) $(INCLUDE_PATHS) $(LIBRARY_PATHS) $(COMPILER_FLAGS)  $(OBJS) -o rt.exe $(LINKER_FLAGS)

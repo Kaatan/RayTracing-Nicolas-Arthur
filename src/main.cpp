@@ -53,7 +53,7 @@ void ComputeAll(vector<Sphere> &spheres, vector<Cube> &cubes, int width, int hei
     float angle = tan(M_PI * 0.5 * fov / 180.); 
     
 	// Traçage des rayons avec parallélisation
-	#pragma omp parallel for simd
+	#pragma omp parallel for simd schedule(dynamic)
     for (int y = 0; y < height; ++y) { 
         for (int x = 0; x < width; ++x) { 
             //Calcul de l'angle d'envoi du rayon initial
@@ -110,14 +110,18 @@ int main(int argc, char** args) {
 
 	bool benchmark = false; //Mode benchmark
 	bool antiAliasing = false; //Antialiasing
+	bool imageMode = false; //Calculer seulement une image et la sauvegarder
 
 	if (argc > 1) {
 		for (int i = 1; i < argc; i++) {
-			if (!strcmp(args[i], "-benchmark")) {
+			if (!strcmp(args[i], "-bm")) {
 				benchmark = true;
 			}
-			if (!strcmp(args[i], "-aa")) {
+			else if (!strcmp(args[i], "-aa")) {
 				antiAliasing = true;
+			}
+			else if (!strcmp(args[i], "-i")) {
+				imageMode = true;
 			}
 		}
 	}
@@ -126,7 +130,7 @@ int main(int argc, char** args) {
 	SDL_Window* window = NULL;
 	SDL_Renderer* sdlRenderer = NULL;
 	if (SDL_Init(SDL_INIT_EVERYTHING) < 0) {
-		cout << "Error initializing SDL: " << SDL_GetError() << endl;
+		std::cout << "Error initializing SDL: " << SDL_GetError() << endl;
 		system("pause");
 		return 1;
 	}
@@ -167,14 +171,36 @@ int main(int argc, char** args) {
 	vector<Cube> cubes;
 
 	vector<Vector3f> pixels(width*height); //Cration d'un tableau pour stocker les pixels qui seront affichés
-	
+
 
 
 	chrono::steady_clock::time_point start, mid, mmid, end;
 
 	chrono::duration<double> t = (chrono::duration<double>)0;
 
-	if (benchmark) { //Mode benchmark
+	if (imageMode) {
+		start = chrono::steady_clock::now();
+
+		if (!antiAliasing) {
+				ComputeAll(spheres, cubes, width, height, pixels.data());
+			}
+			else {
+				ComputeAllAA(spheres, cubes, width, height, pixels.data());
+			}
+		mid = chrono::steady_clock::now();
+		saveImage("results/image.ppm", width, height, pixels.data());
+		
+		end = chrono::steady_clock::now();
+		
+		chrono::duration<double> global_elaps = end - start;
+		chrono::duration<double> calc_elaps = mid - start;
+		chrono::duration<double> save_elaps = end - mid;
+
+		std::cout << "Total : "<< global_elaps.count()*1000 << "ms" << endl;
+		std::cout << "Calcul : "<< calc_elaps.count()*1000 << "ms" << endl;
+		std::cout << "Ecriture : "<< save_elaps.count()*1000 << "ms" << endl;
+	}
+	else if (benchmark) { //Mode benchmark
 
 		chrono::steady_clock::time_point global_start = chrono::steady_clock::now();
 		int frames = 50;
@@ -204,7 +230,7 @@ int main(int argc, char** args) {
 		chrono::duration<double> global_elaps = global_end - global_start;
 		float fps = frames/global_elaps.count();
 
-		cout << omp_get_max_threads() << ","
+		std::cout << omp_get_max_threads() << ","
 				<< global_elaps.count() << ","
 				<< fps << endl;
 	}
@@ -247,7 +273,7 @@ int main(int argc, char** args) {
 
 
 
-			cout <<"Compute time(ms) " << calc_elaps.count()*1000
+			std::cout <<"Compute time(ms) " << calc_elaps.count()*1000
 					<<  ",  Render time(ms) " << render_elaps.count()*1000
 					<< ",  Total time(ms) " << global_elaps.count()*1000
 					<< ", FPS " << 1/global_elaps.count() << "\r"
